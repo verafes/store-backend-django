@@ -16,7 +16,7 @@ class BrandAdmin(admin.ModelAdmin):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['id', 'title', 'is_active']
-    search_fields = ['title',]
+    search_fields = ['category',]
 
 
 @admin.register(ProductCategory)

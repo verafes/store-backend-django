@@ -1,29 +1,48 @@
-from django.http.response import HttpResponse
+from rest_framework import generics
+from .serializers import *
+from .models import *
 
 
-def add_product(request):
-    return HttpResponse('New product added')
+'''category/list/'''
+class CategoryList(generics.ListAPIView):
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        return Category.objects.filter(is_active=True)
 
 
-def get_product(request):
-    return HttpResponse('Product')
+'''category/get/<id>'''
+class CategoryRetrieve(generics.RetrieveAPIView):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
 
 
-def product_list(request):
-    return HttpResponse('Last of all products')
+'''api/product/all/'''
+class ProductList(generics.ListAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductPreviewSerializer
 
 
-def category_list(request):
-    return HttpResponse('List of categories')
+'''/api/product/get/<product_id>/'''
+class ProductRetrieve(generics.RetrieveAPIView):
+    serializer_class = ProductRetrieveSerializer
+    queryset = Product.objects.all()
 
 
-def get_category(request):
-    return HttpResponse('Category')
+'''/api/product/get/<category_ID>/products/'''
+class CategoryProductRetrieve(generics.RetrieveAPIView):
+    serializer_class = CategoryProductRetrieveSerializer
+    queryset = Category.objects.all()
 
 
-def brand_list(request):
-    return HttpResponse('List of brands')
+'''api/product/brands/all/'''
+class BrandList(generics.ListAPIView):
+    serializer_class = BrandSerializer
+    queryset = Brand.objects.all()
 
 
-def get_brand(request):
-    return HttpResponse('Brand')
+'''/api/product/get/<brands_ID> '''
+class ProductBrandRetrieve(generics.RetrieveAPIView):
+    serializer_class = BrandProductRetrieveSerializer
+    queryset = Brand.objects.all()
+

@@ -7,7 +7,7 @@ class Product(models.Model):
     price = models.DecimalField(default=0, max_digits=9, decimal_places=2, null=False, blank=False)
     old_price = models.DecimalField(default=0, max_digits=9, decimal_places=2, null=False, blank=False)
     brand = models.ForeignKey('products.Brand', null=True, blank=False, on_delete=models.SET_NULL)
-    quantity = models.IntegerField(default = 1, null=False, blank=False)
+    quantity = models.IntegerField(default=1, null=False, blank=False)
     description = models.TextField(null=True, blank=True)
 
     class Meta:
@@ -34,7 +34,7 @@ class Brand(models.Model):
 
 """ Table Category """
 class Category(models.Model):
-    title = models.CharField(verbose_name='Title', max_length=200, blank=False, null=False)
+    title = models.CharField(verbose_name='Category', max_length=200, blank=False, null=False)
     is_active = models.BooleanField(verbose_name='Is Active', default=False, blank=False, null=False)
 
     class Meta:
