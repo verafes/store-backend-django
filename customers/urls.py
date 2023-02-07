@@ -3,9 +3,9 @@ from .views import *
 
 urlpatterns = [
     path('create/', create_customer),   # guest user
-    path('list/', list_customers),
+    path('list/', CustomerList.as_view()),
     path("registration/", create_user),   # registered user
     path('user/', get_user),
     path('myorders/', my_orders),
-    path("address/list/", address_list),
+    path("address/list/", CustomerAddressList.as_view()),
 ]
