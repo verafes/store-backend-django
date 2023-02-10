@@ -59,6 +59,7 @@ class ProductCategory(models.Model):
 
     def __str__(self):
         return self.product.title
+               # + " - " + str(self.category.title)[0:5]
 
 
 """ Table of Reviews of Products """
@@ -74,4 +75,6 @@ class ProductReview(models.Model):
         verbose_name_plural = 'Products reviews'
 
     def __str__(self):
-        return self.fullname
+        # return self.fullname
+        return self.product.title
+        # return str(self.product) + " - " + self.review[0.5] + ".."

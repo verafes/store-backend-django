@@ -53,6 +53,14 @@ class BrandProductRetrieveSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'brand_products']
 
 
+'''full data for preview product page'''
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        # fields = "__all__"
+        fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'brand_id']
+
+
 '''full data for preview product page '''
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
