@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 
+
 '''category/list/'''
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,14 +12,14 @@ class CategorySerializer(serializers.ModelSerializer):
 '''product-category'''
 class CategoryProductSerializer(serializers.ModelSerializer):
     product_title = serializers.CharField(source="product.title")
-    category_title = serializers.CharField(source="category.title")
+    # category_title = serializers.CharField(source="category.title")
 
     class Meta:
         model = ProductCategory
-        fields = ['product_id', 'product_title', 'category_id', 'category_title']
+        fields = ['product_id', 'product_title', ] #'category_id', 'category_title']
 
 
-'''product/get/<category_ID>/products/'''
+'''product/get/<category_ID>/<products>/'''
 class CategoryProductRetrieveSerializer(serializers.ModelSerializer):
     category_products = CategoryProductSerializer(many=True, read_only=True)
 
@@ -27,77 +28,46 @@ class CategoryProductRetrieveSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'category_products']
 
 
-'''product/brands/all/'''
+'''product/brands/all/ & /api/product/get/brand/<brands_ID>'''
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
         fields = ['id', 'title']
 
 
-'''product-brand'''
-class ProductBrandSerializer(serializers.ModelSerializer):
-    brand = BrandSerializer(many=False, read_only=True)
+'''to represent brands in ProductList'''
+class BrandFields(serializers.RelatedField):
 
-    class Meta:
-        model = Product
-        #fields = '__all__'
-        fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'brand']
-
-
-'''product/get/<brand_id>/ - retrieve products of the brand'''
-class BrandProductRetrieveSerializer(serializers.ModelSerializer):
-    brand_products = ProductBrandSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Brand
-        fields = ['id', 'title', 'brand_products']
-
-
-'''full data for preview product page'''
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        # fields = "__all__"
-        fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'brand_id']
-
-
-'''full data for preview product page '''
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = "__all__"
-
-
-'''product-preview > api/product/all'''
-class ProductPreviewSerializer(serializers.ModelSerializer):
-    brand = BrandSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = Product
-        fields = "__all__"
-        # fields = ['id', 'title', 'price', 'old_price', 'photo', 'brand']
-
-
-'''/api/product/get/<product_id>/ - full data for preview product page'''
-class ProductRetrieve(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = "__all__"
+    def to_representation(self, value):
+        return {
+            'id': 'value.id',
+            'title': 'value.title'
+            }
 
 
 '''product-reviews'''
 class ProductReviewSerializer(serializers.ModelSerializer):
+    brand = BrandSerializer(many=False, read_only=True)
+
     class Meta:
         model = ProductReview
         fields = '__all__'
 
 
-'''product-retrieve info'''
-class ProductRetrieveSerializer(serializers.ModelSerializer):
+'''full data for preview product page > api/product/get/id'''
+class ProductSerializer(serializers.ModelSerializer):
+    brand = BrandFields(many=False, read_only=True)
     reviews = ProductReviewSerializer(many=True, read_only=True)
-    brand = BrandSerializer(many=False, read_only=True)
 
     class Meta:
         model = Product
-        fields = '__all__'
-        # fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'brand', 'photo', 'reviews']
+        fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'brand', "reviews"]
+
+
+'''product-preview > api/product/all'''
+class ProductListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = ['id', 'title', 'price', 'old_price', 'quantity', 'brand_id']   # no description
+

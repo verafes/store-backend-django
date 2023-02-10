@@ -1,6 +1,7 @@
 from django.http.response import HttpResponse
 from rest_framework import generics
 
+from products.serializers import ProductListSerializer
 from .models import Customer, CustomerAddress
 from .serializers import CustomerSerializer
 

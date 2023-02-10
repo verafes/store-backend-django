@@ -1,9 +1,13 @@
 from django.http.response import HttpResponse
-from rest_framework import generics
+from rest_framework import generics, filters
+
+from .filters import ProductFilter
 from .serializers import *
 from .models import *
 import json
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 '''category/list/'''
 class CategoryList(generics.ListAPIView):
@@ -14,6 +18,7 @@ class CategoryList(generics.ListAPIView):
         #SQL SELECT * FROM categories WHERE title = "Women's snowboards" AND is_active=True
         return Category.objects.filters(Q(title = "Women's snowboards") | Q(is_active=True))
 
+
 '''category/get/<id>'''
 class CategoryRetrieve(generics.RetrieveAPIView):
     serializer_class = CategorySerializer
@@ -23,12 +28,16 @@ class CategoryRetrieve(generics.RetrieveAPIView):
 '''api/product/all/'''
 class ProductList(generics.ListAPIView):
     queryset = Product.objects.all()
-    serializer_class = ProductPreviewSerializer
+    serializer_class = ProductListSerializer
+    filter_backend = (DjangoFilterBackend, filters.SearchFilter,)
+    search_fields = ('title', 'brand__title',)
+    # filterset_fields = ('brand_id', 'price')
+    filterset_class = ProductFilter
 
 
 '''/api/product/get/<product_id>/'''
 class ProductRetrieve(generics.RetrieveAPIView):
-    serializer_class = ProductRetrieveSerializer
+    serializer_class = ProductSerializer  #ProductRetrieveSerializer
     queryset = Product.objects.all()
 
 
@@ -44,19 +53,21 @@ class BrandList(generics.ListAPIView):
     queryset = Brand.objects.all()
 
 
-'''/api/product/get/<brands_ID> '''
+'''/api/product/get/brand/<brands_ID> '''
 class ProductBrandRetrieve(generics.RetrieveAPIView):
-    serializer_class = BrandProductRetrieveSerializer
+    serializer_class = BrandSerializer
     queryset = Brand.objects.all()
 
 
-# api/product/add/
+'''api/product/add/'''
 class ProductCreate(generics.CreateAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
 
 
-'''variants with funcs '''
+'''--- variants with funcs --- 
+ 
+/api/product/goods/'''
 def product_list(request):
     products = Product.objects.all()
     prods_list = []
@@ -74,6 +85,7 @@ def product_list(request):
     return HttpResponse(json.dumps(prods_list))
 
 
+'''/api/product/good/<id>/'''
 def retrieve_product(request, product_id):
     try:
         product = Product.objects.get(pk=product_id)
@@ -91,6 +103,7 @@ def retrieve_product(request, product_id):
     return HttpResponse(json.dumps(data))
 
 
+'''/api/product/good/delete/<id>/'''
 def delete_product(request, product_id):
     try:
         product = Product.objects.get(pk=product_id)
