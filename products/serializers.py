@@ -40,14 +40,13 @@ class BrandFields(serializers.RelatedField):
 
     def to_representation(self, value):
         return {
-            'id': 'value.id',
-            'title': 'value.title'
+            'id': value.id,
+            'title': value.title,
             }
 
 
 '''product-reviews'''
 class ProductReviewSerializer(serializers.ModelSerializer):
-    brand = BrandSerializer(many=False, read_only=True)
 
     class Meta:
         model = ProductReview
@@ -66,8 +65,9 @@ class ProductSerializer(serializers.ModelSerializer):
 
 '''product-preview > api/product/all'''
 class ProductListSerializer(serializers.ModelSerializer):
+    brand = BrandFields(many=False, read_only=True)
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'price', 'old_price', 'quantity', 'brand_id']   # no description
+        fields = ['id', 'title', 'price', 'old_price', 'quantity', 'brand', ]   # no description
 

@@ -14,9 +14,9 @@ class CategoryList(generics.ListAPIView):
     serializer_class = CategorySerializer
 
     def get_queryset(self):
-        # return Category.objects.filter(is_active=True)
+        return Category.objects.filter(is_active=True)
         #SQL SELECT * FROM categories WHERE title = "Women's snowboards" AND is_active=True
-        return Category.objects.filters(Q(title = "Women's snowboards") | Q(is_active=True))
+        # return Category.objects.filters(Q(title = "Women's snowboards") | Q(is_active=True))
 
 
 '''category/get/<id>'''
@@ -37,11 +37,11 @@ class ProductList(generics.ListAPIView):
 
 '''/api/product/get/<product_id>/'''
 class ProductRetrieve(generics.RetrieveAPIView):
-    serializer_class = ProductSerializer  #ProductRetrieveSerializer
+    serializer_class = ProductSerializer
     queryset = Product.objects.all()
 
 
-'''/api/product/get/<category_ID>/products/'''
+'''/api/product/get/category/<category_ID> > list of products by category'''
 class CategoryProductRetrieve(generics.RetrieveAPIView):
     serializer_class = CategoryProductRetrieveSerializer
     queryset = Category.objects.all()
