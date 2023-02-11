@@ -19,7 +19,7 @@ class CategoryProductSerializer(serializers.ModelSerializer):
         fields = ['product_id', 'product_title', ] #'category_id', 'category_title']
 
 
-'''product/get/<category_ID>/<products>/'''
+'''product/get/category/<category_ID> > list of product by category'''
 class CategoryProductRetrieveSerializer(serializers.ModelSerializer):
     category_products = CategoryProductSerializer(many=True, read_only=True)
 
@@ -28,7 +28,7 @@ class CategoryProductRetrieveSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'category_products']
 
 
-'''product/brands/all/ & /api/product/get/brand/<brands_ID>'''
+'''product/brands/all/ & /api/product/get/brand/<brand_ID>'''
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand

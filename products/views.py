@@ -4,9 +4,11 @@ from rest_framework import generics, filters
 from .filters import ProductFilter
 from .serializers import *
 from .models import *
+from .paginations import ProductPagination
 import json
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+# from rest_framework.pagination import PageNumberPagination
 
 
 '''category/list/'''
@@ -33,6 +35,7 @@ class ProductList(generics.ListAPIView):
     search_fields = ('title', 'brand__title',)
     # filterset_fields = ('brand_id', 'price')
     filterset_class = ProductFilter
+    pagination_class = ProductPagination
 
 
 '''/api/product/get/<product_id>/'''
