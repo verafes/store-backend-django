@@ -9,7 +9,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-'''Products in Order - api/order_product/list/'''
+'''Products in Order - api/order/list/'''
 class OrderProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderProduct

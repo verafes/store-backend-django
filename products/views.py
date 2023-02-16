@@ -11,6 +11,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 # from rest_framework.pagination import PageNumberPagination
 
 
+''' --- Class-based views ---'''
+
 '''category/list/'''
 class CategoryList(generics.ListAPIView):
     serializer_class = CategorySerializer
@@ -68,7 +70,7 @@ class ProductCreate(generics.CreateAPIView):
     queryset = Product.objects.all()
 
 
-'''--- variants with funcs --- 
+'''--- variants of Function views --- 
  
 /api/product/goods/'''
 def product_list(request):

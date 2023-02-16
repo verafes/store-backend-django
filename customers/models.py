@@ -5,12 +5,12 @@ User = get_user_model()
 
 
 class Customer(models.Model):
-    first_name = models.CharField(verbose_name='First Name', max_length=200, default='', blank=True, null=False)
-    last_name = models.CharField(verbose_name='Last Name', max_length=200, default='', blank=True, null=False)
-    phone = models.BigIntegerField(verbose_name='Phone number', null=True)
-    email = models.CharField(verbose_name='Email', max_length=200, default='', blank=True, null=False)
+    first_name = models.CharField(verbose_name='First Name', max_length=200, default='', blank=True, null=True)
+    last_name = models.CharField(verbose_name='Last Name', max_length=200, default='', blank=True, null=True)
+    phone = models.BigIntegerField(verbose_name='Phone number', null=True, blank=True)
+    email = models.CharField(verbose_name='Email', max_length=200, default='', blank=True, null=True)
     time_created = models.DateTimeField(verbose_name='Date', auto_now_add=True)
-    user = models.ForeignKey(User, verbose_name='User', on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, verbose_name='User', on_delete=models.CASCADE, null=True)
     token = models.CharField(max_length=200, null=False, blank=False, verbose_name='Token', default='')
 
     class Meta:
@@ -31,3 +31,6 @@ class CustomerAddress(models.Model):
         db_table = 'customer_address'
         verbose_name = 'Customer Address'
         verbose_name_plural = 'Customers Addresses'
+
+        def __str__(self):
+            return str(self.address)
