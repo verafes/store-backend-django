@@ -6,7 +6,7 @@ from .serializers import *
 from .models import *
 from .paginations import ProductPagination
 import json
-from django.db.models import Q
+# from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 # from rest_framework.pagination import PageNumberPagination
 
@@ -70,7 +70,7 @@ class ProductCreate(generics.CreateAPIView):
     queryset = Product.objects.all()
 
 
-'''--- variants of Function views --- 
+'''--- variants of Function-based views --- 
  
 /api/product/goods/'''
 def product_list(request):

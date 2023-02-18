@@ -18,6 +18,9 @@ class Customer(models.Model):
         verbose_name = 'Customer'
         verbose_name_plural = 'Customers'
 
+    def __str__(self):
+        return self.last_name
+
 
 class CustomerAddress(models.Model):
     country = models.CharField(verbose_name='Country', max_length=60, blank=False, null=False)
