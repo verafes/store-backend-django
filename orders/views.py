@@ -1,5 +1,7 @@
 from django.http.response import HttpResponse
-from rest_framework import generics, status
+from requests import Response
+from rest_framework import generics, status, request
+from rest_framework.views import APIView
 
 from orders.models import Order, OrderProduct
 from orders.serializers import OrderSerializer
@@ -24,57 +26,69 @@ class OrderProductList(generics.ListAPIView):
 
 
 '''Method to update data in Cart - api/order/cart/update'''
-def update_cart(request):
-    print("METHOD", request.method)
-    if request.method == 'POST':
-        try:
-            request_json = json.loads(request.body)
+class UpdateCart(APIView):
+    http_method = ['post']
 
-            customer = Customer.objects.get(token=request_json['token'])
-            product = Product.objects.get(pk=request_json['product_id'])
+    def post(self, *args, **qargs):
+        print("METHOD", request.method)
+        try:
+            try:
+                customer = Customer.objects.get(token=self.request.data['token'])
+            except Customer.DoesNotExist:
+                response = {
+                    'status': False,
+                    'error': 'Customer does not exist'
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                product = Product.objects.get(pk=self.request.data['product_id'])
+            except Product.DoesNotExist:
+                response = {
+                    'status': False,
+                    'error': 'Product does not exist'
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
             orders = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id')
             if orders.count() == 0:
                 order = Order.objects.create(customer=customer)
             else:
                 order = orders[0]
             # if no quantity per request, set default by 1
-            if not 'quantity' in request_json:
-                request_json['quantity'] = 1
+            if not 'quantity' in self.request:
+                self.request.data['quantity'] = 1
+
             try:
                 product_order = OrderProduct.objects.get(product=product, order=order)
-                if request_json['quantity'] == 0:
+                if self.request.data['quantity'] == 0:
                     product_order.delete()
                 else:
                     product_order.price = product.price
-                    product_order.quantity = request_json['quantity']
+                    product_order.quantity = request.data['quantity']
                     product_order.save()
-
             except OrderProduct.DoesNotExist:
                 OrderProduct.objects.create(
-                    order=order,
-                    product=product,
-                    price=product.price,
-                    quantity=request_json['quantity']
-                )
-            count_products = OrderProduct.objects.filter(order__customer__token=request_json['token']).count()
+                    order = order,
+                    product = product,
+                    price = product.price,
+                    quantity = self.request.data['quantity']
+                    )
+
+            products_in_order = OrderProduct.objects.filter(order=order)
+            count_items = 0
+            for item in products_in_order:
+                count_items += item['quantity']
             response = {
                 'status': True,
-                'cart_item_count': count_products
+                'cart_item_count': count_items
             }
-            response_status = status.HTTP_200_OK
-
+            return Response(data=response, status=status.HTTP_200_OK)
 
         except BaseException as error:
             response = {
                 'status': False,
                 'message': str(error)
             }
-            response_status = status.HTTP_400_BAD_REQUEST
-    else:
-        response = {
-            'status': False,
-            'message': 'Method not allowed. POST required to update cart'
-        }
-        response_status = status.HTTP_405_METHOD_NOT_ALLOWED
 
-    return HttpResponse(json.dumps(response), status=response_status)
+        return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
