@@ -32,6 +32,7 @@ class UpdateCart(APIView):
     def post(self, *args, **qargs):
         print("METHOD", request.method)
         try:
+            # Check if the customer exists
             try:
                 customer = Customer.objects.get(token=self.request.data['token'])
             except Customer.DoesNotExist:
@@ -41,6 +42,7 @@ class UpdateCart(APIView):
                 }
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
 
+            # Check if the product is available
             try:
                 product = Product.objects.get(pk=self.request.data['product_id'])
             except Product.DoesNotExist:
@@ -50,15 +52,22 @@ class UpdateCart(APIView):
                 }
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
 
+            # Default to 1 if quantity is not provided
+            requested_quantity = self.request.data.get('quantity', 1)
+            # Check if the product quantity is enough in inventory
+            if product.quantity < requested_quantity:
+                response = {
+                    'status': False,
+                    'error': 'Not enough product quantity available in inventory'
+                }
+                return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+            # forming Cart
             orders = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id')
             if orders.count() == 0:
                 order = Order.objects.create(customer=customer)
             else:
                 order = orders[0]
-            # if no quantity per request, set default by 1
-            if not 'quantity' in self.request:
-                self.request.data['quantity'] = 1
-
             try:
                 product_order = OrderProduct.objects.get(product=product, order=order)
                 if self.request.data['quantity'] == 0:
@@ -68,13 +77,13 @@ class UpdateCart(APIView):
                     product_order.quantity = request.data['quantity']
                     product_order.save()
             except OrderProduct.DoesNotExist:
-                OrderProduct.objects.create(
-                    order = order,
-                    product = product,
-                    price = product.price,
-                    quantity = self.request.data['quantity']
-                    )
-
+                    OrderProduct.objects.create(
+                        order=order,
+                        product=product,
+                        price=product.price,
+                        quantity=self.request.data['quantity']
+                        )
+            # count items in Cart
             products_in_order = OrderProduct.objects.filter(order=order)
             count_items = 0
             for item in products_in_order:
