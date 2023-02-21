@@ -4,10 +4,9 @@ from rest_framework import generics, status, request
 from rest_framework.views import APIView
 
 from orders.models import Order, OrderProduct
-from orders.serializers import OrderSerializer
-from customers.models import Customer, CustomerAddress
+from orders.serializers import OrderSerializer, OrderProductSerializer
+from customers.models import Customer
 from products.models import Product
-import json
 
 
 '''List of Orders - api/order/all'''
@@ -22,7 +21,7 @@ class OrderList(generics.ListAPIView):
 '''List of Products in Order - /api/order/get/<product_id>/'''
 class OrderProductList(generics.ListAPIView):
     queryset = OrderProduct.objects.all()
-    serializer_class = OrderSerializer
+    serializer_class = OrderProductSerializer
 
 
 '''Method to update data in Cart - api/order/cart/update'''
@@ -30,7 +29,6 @@ class UpdateCart(APIView):
     http_method = ['post']
 
     def post(self, *args, **qargs):
-        print("METHOD", request.method)
         try:
             # Check if the customer exists
             try:

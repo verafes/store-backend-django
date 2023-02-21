@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
 from .models import Customer, CustomerAddress
-from .serializers import CustomerSerializer, MyOrderSerializer
+from .serializers import CustomerSerializer, MyOrderSerializer, CustomerAddressSerializer
 from orders.models import Order
 
 
@@ -43,10 +43,6 @@ class MyOrders(generics.ListAPIView):
         return Order.objects.filter(customer__user=self.request.user)
 
 
-# http://127.0.0.1:8000/api/jwt/auth/
-# { "username": "testuser", "password": "eyJ0eXAiOiJKV1Qi" }
-# getting jwt
-
 '''List of Customers - api/customer/list'''
 class CustomerList(generics.ListAPIView):
     queryset = Customer.objects.all()
@@ -56,6 +52,6 @@ class CustomerList(generics.ListAPIView):
 '''List of Customer's Addresses - api/customer/address/list'''
 class CustomerAddressList(generics.ListAPIView):
     queryset = CustomerAddress.objects.all()
-    serializer_class = CustomerSerializer
+    serializer_class = CustomerAddressSerializer
 
 
