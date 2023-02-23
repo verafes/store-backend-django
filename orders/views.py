@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from orders.models import Order, OrderProduct
 from orders.serializers import OrderSerializer, OrderProductSerializer
-from customers.models import Customer
+from customers.models import Customer, CustomerAddress
 from products.models import Product
 
 
@@ -90,6 +90,10 @@ class UpdateCart(APIView):
                 'status': True,
                 'cart_item_count': count_items
             }
+            # Update the product quantity in the inventory
+            product.quantity = product.quantity - requested_quantity
+            product.save()
+
             return Response(data=response, status=status.HTTP_200_OK)
 
         except BaseException as error:
@@ -99,3 +103,8 @@ class UpdateCart(APIView):
             }
 
         return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
+
+
+# api/order/finalize/
+class OrderFinalize(APIView):
+    http_method = ['put']
