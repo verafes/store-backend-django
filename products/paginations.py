@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 
 class ProductPagination(pagination.PageNumberPagination):
-    page_size = 4
+    page_size = 2
 
     def get_paginated_response(self, data):
         page = int(self.request.query_params.get(self.page_query_param, 1))

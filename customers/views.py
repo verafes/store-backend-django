@@ -11,6 +11,7 @@ from .serializers import CustomerSerializer, MyOrderSerializer, CustomerAddressS
 from orders.models import Order
 
 
+'''Create customer > api/customer/create'''
 class CustomerCreate(APIView):
     HTTP_method_names = ['post']
 
@@ -53,5 +54,3 @@ class CustomerList(generics.ListAPIView):
 class CustomerAddressList(generics.ListAPIView):
     queryset = CustomerAddress.objects.all()
     serializer_class = CustomerAddressSerializer
-
-

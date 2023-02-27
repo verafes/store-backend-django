@@ -2,24 +2,24 @@ from rest_framework import serializers
 from .models import *
 
 
-'''category/list/'''
+'''/api/category/list/'''
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
 
 
-'''product-category'''
+'''/api/product-category'''
 class CategoryProductSerializer(serializers.ModelSerializer):
     product_title = serializers.CharField(source="product.title")
     # category_title = serializers.CharField(source="category.title")
 
     class Meta:
         model = ProductCategory
-        fields = ['product_id', 'product_title', ] #'category_id', 'category_title']
+        fields = ['product_id', 'product_title']
 
 
-'''product/get/category/<category_ID> > list of product by category'''
+'''/api/product/get/category/<category_ID> > list of product by category'''
 class CategoryProductRetrieveSerializer(serializers.ModelSerializer):
     category_products = CategoryProductSerializer(many=True, read_only=True)
 
@@ -28,7 +28,7 @@ class CategoryProductRetrieveSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'category_products']
 
 
-'''product/brands/all/ & /api/product/get/brand/<brand_ID>'''
+'''/api/product/brands/all/ & /api/product/get/brand/<brand_ID>'''
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
@@ -60,7 +60,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'brand', "reviews"]
+        fields = ['id', 'title', 'price', 'old_price', 'description', 'quantity', 'photo', 'brand', "reviews"]
 
 
 '''product-preview > api/product/all'''
@@ -69,5 +69,5 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'title', 'price', 'old_price', 'quantity', 'brand', ]   # no description
+        fields = ['id', 'title', 'price', 'old_price', 'quantity', 'brand', ]
 

@@ -4,16 +4,16 @@ from rest_framework import generics, filters
 from .filters import ProductFilter
 from .serializers import *
 from .models import *
-from .paginations import ProductPagination
 import json
 # from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
+from .paginations import ProductPagination
 # from rest_framework.pagination import PageNumberPagination
 
 
 ''' --- Class-based views ---'''
 
-'''category/list/'''
+'''/api/category/list/'''
 class CategoryList(generics.ListAPIView):
     serializer_class = CategorySerializer
 
@@ -23,7 +23,7 @@ class CategoryList(generics.ListAPIView):
         # return Category.objects.filters(Q(title = "Women's snowboards") | Q(is_active=True))
 
 
-'''category/get/<id>'''
+'''/api/category/get/<id>'''
 class CategoryRetrieve(generics.RetrieveAPIView):
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
@@ -70,6 +70,12 @@ class ProductCreate(generics.CreateAPIView):
     queryset = Product.objects.all()
 
 
+'''api/product/<product_id>/delete/'''
+class ProductRetrieveDestroy(generics.RetrieveDestroyAPIView):
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+
+
 '''--- variants of Function-based views --- 
  
 /api/product/goods/'''
@@ -103,7 +109,7 @@ def retrieve_product(request, product_id):
             'brand_id': product.brand_id,
         }
     except Product.DoesNotExist:
-        data = {"error": "Product does not exist"}
+        data = {"error": 'Product does not exist'}
 
     return HttpResponse(json.dumps(data))
 
@@ -114,13 +120,10 @@ def delete_product(request, product_id):
         product = Product.objects.get(pk=product_id)
         data = {
             'id': product.id,
-            'message': "success",
+            'message': 'success',
         }
         product.delete()
     except Product.DoesNotExist:
         data = {"error": "Product does not exist"}
 
     return HttpResponse(json.dumps(data))
-
-
-
