@@ -58,7 +58,6 @@ class ProductTestCase(APITestCase):
             ]
         }
         response = self.client.get(url)
-        # print("! test products list >", response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(Product.objects.count(), 2)

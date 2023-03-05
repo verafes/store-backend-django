@@ -1,14 +1,13 @@
 import json
 import uuid
 from datetime import datetime
-from unittest import skip
 
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
 
 from customers.models import *
-from orders.models import Order, OrderProduct
+from orders.models import Order
 
 
 class CustomerTestCase(APITestCase):
@@ -27,12 +26,12 @@ class CustomerTestCase(APITestCase):
         response = self.client.post(url, data=request_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    @skip(reason="KeyError: 'access' in token = response.data['access']")
+
     def test_customer_my_orders(self):
         # create a new customer
         customer_token = str(uuid.uuid4())
         Customer.objects.create(token=customer_token)
-        User.objects.create_user(username='testuser', password='testpass')
+        User.objects.create(username='testuser', password='testpass')
 
         # create a new order for the customer
         order = Order.objects.create(
@@ -46,8 +45,7 @@ class CustomerTestCase(APITestCase):
         # get the JWT token for the customer
         url = reverse('token_obtain_pair')
         request_data = {
-            # 'username': 'testuser',
-            'username': customer_token,
+            'username': 'testuser',
             'password': 'testpass'
         }
         response = self.client.post(url, data=request_data, format='json')
@@ -57,7 +55,7 @@ class CustomerTestCase(APITestCase):
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
 
-        # make a GET request to the my_orders endpoint
+        # GET request to the my_orders endpoint
         response = client.get(url, format='json')
 
         # check that the response has the order we created
@@ -70,3 +68,6 @@ class CustomerTestCase(APITestCase):
         self.assertEqual(response.data[0]['time_checkout'], order.time_checkout.isoformat())
         self.assertEqual(response.data[0]['time_delivery'], order.time_delivery.isoformat())
 
+        # test_customer_my_orders -> Fail with error: line 52, in test_customer_my_orders
+        # token = response.data['access']
+        # KeyError: 'access'
