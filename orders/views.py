@@ -4,6 +4,9 @@ from rest_framework import generics, status, request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
+
 from orders.models import Order, OrderProduct
 from orders.serializers import OrderSerializer, OrderProductSerializer
 from customers.models import Customer, CustomerAddress
@@ -110,23 +113,25 @@ class CartList(generics.ListAPIView):
     def get_queryset(self):
         try:
             return OrderProduct.objects.filter(
-                order__customer__token=self.kwarks['token'],
-                order__is_ordered=False)
+                order__customer__token=self.kwargs['token'],
+                order__is_ordered=False
+            )
         except BaseException:
             return None
 
 
 '''api/order/finalize/'''
+@permission_classes([AllowAny])
 class OrderFinalize(APIView):
     http_method = ['put']
 
     serializer_class = OrderSerializer
-    queryset = Order
+    queryset = Order.objects.all()
 
     def update(self, request, *args, **kwargs):
         try:
             customer = Customer.objects.get(token=self.request.data['token'])
-            order = Order.objects.filer(customer=customer, is_ordered=False).order_by('-id')[0]
+            order = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id').first()
 
             if order is None:
                 return Response({
