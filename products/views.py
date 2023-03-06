@@ -1,11 +1,13 @@
 from django.http.response import HttpResponse
 from rest_framework import generics, filters
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from .filters import ProductFilter
 from .serializers import *
 from .models import *
 import json
-# from django.db.models import Q
+
 from django_filters.rest_framework import DjangoFilterBackend
 from .paginations import ProductPagination
 # from rest_framework.pagination import PageNumberPagination
@@ -19,8 +21,6 @@ class CategoryList(generics.ListAPIView):
 
     def get_queryset(self):
         return Category.objects.filter(is_active=True)
-        #SQL SELECT * FROM categories WHERE title = "Women's snowboards" AND is_active=True
-        # return Category.objects.filters(Q(title = "Women's snowboards") | Q(is_active=True))
 
 
 '''/api/category/get/<id>'''
@@ -67,63 +67,67 @@ class ProductBrandRetrieve(generics.RetrieveAPIView):
 '''api/product/add/'''
 class ProductCreate(generics.CreateAPIView):
     serializer_class = ProductSerializer
-    queryset = Product.objects.all()
+    # queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
 
-'''api/product/<product_id>/delete/'''
+'''api/product/rud/<product_id>/'''
 class ProductRetrieveDestroy(generics.RetrieveDestroyAPIView):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
 
 '''--- variants of Function-based views --- 
  
 /api/product/goods/'''
-def product_list(request):
-    products = Product.objects.all()
-    prods_list = []
-    for prod in products:
-        tmp_prod = {
-            'id': prod.id,
-            'title': prod.title,
-            'price': float(prod.price),
-            'old_price': float(prod.old_price),
-            'quantity': prod.quantity,
-            'brand_id': prod.brand_id,
-        }
-        prods_list.append(tmp_prod)
-
-    return HttpResponse(json.dumps(prods_list))
-
-
-'''/api/product/good/<id>/'''
-def retrieve_product(request, product_id):
-    try:
-        product = Product.objects.get(pk=product_id)
-        data = {
-            'id': product.id,
-            'title': product.title,
-            'price': float(product.price),
-            'old_price': float(product.old_price),
-            'quantity': product.quantity,
-            'brand_id': product.brand_id,
-        }
-    except Product.DoesNotExist:
-        data = {"error": 'Product does not exist'}
-
-    return HttpResponse(json.dumps(data))
-
-
-'''/api/product/good/delete/<id>/'''
-def delete_product(request, product_id):
-    try:
-        product = Product.objects.get(pk=product_id)
-        data = {
-            'id': product.id,
-            'message': 'success',
-        }
-        product.delete()
-    except Product.DoesNotExist:
-        data = {"error": "Product does not exist"}
-
-    return HttpResponse(json.dumps(data))
+# def product_list(request):
+#     products = Product.objects.all()
+#     prods_list = []
+#     for prod in products:
+#         tmp_prod = {
+#             'id': prod.id,
+#             'title': prod.title,
+#             'price': float(prod.price),
+#             'old_price': float(prod.old_price),
+#             'quantity': prod.quantity,
+#             'brand_id': prod.brand_id,
+#         }
+#         prods_list.append(tmp_prod)
+#
+#     return HttpResponse(json.dumps(prods_list))
+#
+#
+# '''/api/product/good/<id>/'''
+# def retrieve_product(request, product_id):
+#     try:
+#         product = Product.objects.get(pk=product_id)
+#         data = {
+#             'id': product.id,
+#             'title': product.title,
+#             'price': float(product.price),
+#             'old_price': float(product.old_price),
+#             'quantity': product.quantity,
+#             'brand_id': product.brand_id,
+#         }
+#     except Product.DoesNotExist:
+#         data = {"error": 'Product does not exist'}
+#
+#     return HttpResponse(json.dumps(data))
+#
+#
+# '''/api/product/good/delete/<id>/'''
+# def delete_product(request, product_id):
+#     try:
+#         product = Product.objects.get(pk=product_id)
+#         data = {
+#             'id': product.id,
+#             'message': 'success',
+#         }
+#         product.delete()
+#     except Product.DoesNotExist:
+#         data = {"error": "Product does not exist"}
+#
+#     return HttpResponse(json.dumps(data))

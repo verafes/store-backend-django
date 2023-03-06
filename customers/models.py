@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
 
@@ -10,7 +11,7 @@ class Customer(models.Model):
     phone = models.BigIntegerField(verbose_name='Phone number', null=True, blank=True)
     email = models.CharField(verbose_name='Email', max_length=200, default='', blank=True, null=True)
     time_created = models.DateTimeField(verbose_name='Date', auto_now_add=True)
-    user = models.ForeignKey(User, verbose_name='User', on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, verbose_name='User', on_delete=models.CASCADE, null=True, blank=True)
     token = models.CharField(max_length=200, null=False, blank=False, verbose_name='Token', default='')
 
     class Meta:

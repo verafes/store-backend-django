@@ -1,4 +1,5 @@
-from rest_framework import generics
+from django.contrib.auth import get_user_model
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
@@ -7,8 +8,11 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_201_CREATED
 
 from .models import Customer, CustomerAddress
-from .serializers import CustomerSerializer, MyOrderSerializer, CustomerAddressSerializer
+from .serializers import CustomerSerializer, MyOrderSerializer, CustomerAddressSerializer, UserSerializer
 from orders.models import Order
+
+
+User = get_user_model()
 
 
 '''Create customer > api/customer/create'''
@@ -32,6 +36,15 @@ class CustomerCreate(APIView):
 
 class GetAuthCustomer(generics.RetrieveAPIView):
     serializer_class = CustomerSerializer
+    authentication_classes = (JWTAuthentication, )
+    permission_classes = (IsAuthenticated, )
+    def get_queryset(self):
+        return Customer.objects.filter(customer__user=self.request.user)
+
+
+class UserCreate(generics.CreateAPIView):
+    serializer_class = UserSerializer
+    queryset = User
 
 
 '''List of orders - api/customer/myorders/'''

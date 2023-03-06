@@ -9,7 +9,8 @@ urlpatterns = [
     path('brands/all/', BrandList.as_view(), name='brands_list'),
     path('add/', ProductCreate.as_view(), name='create_product'),
     path('get/<int:pk>/delete/', ProductRetrieveDestroy.as_view(), name="product_delete"),
-    path('get/brand/<int:pk>/', ProductBrandRetrieve.as_view(), name='brand_by_id'),
+    path('rud/<int:pk>/', ProductRetrieveDestroy.as_view(), name="product_update"),
+    path('brand/<int:pk>/', ProductBrandRetrieve.as_view(), name='brand_by_id'),
     path('get/<int:pk>/', ProductRetrieve.as_view(), name='product_by_id'),
 
     # path('goods/', product_list, name="list_of_products"),
