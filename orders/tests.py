@@ -2,9 +2,11 @@ import json
 import uuid
 from datetime import datetime
 
-from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework import status, request
+from rest_framework.test import APITestCase, force_authenticate
 from django.urls import reverse
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from customers.models import *
 from orders.models import Order, OrderProduct
 from products.models import Product, Brand
@@ -38,7 +40,7 @@ class CartTestCase(APITestCase):
         Customer.objects.create(token=customer_token)
         url = reverse('update_cart')
         request_data = {
-            "token": "d09c03be-9015-458c-b2c8-d50e43e36a3b",
+            "token": "test",
             "product_id": 1,
             "quantity": 1
         }
@@ -53,11 +55,11 @@ class CartTestCase(APITestCase):
 
 
     def test_get_products_in_cart(self):
-        # create a new customer
+        # creating a new customer
         customer_token = str(uuid.uuid4())
         customer = Customer.objects.create(token=customer_token)
+        # creating a new product for the customer
         brand = Brand.objects.create(title='test brand')
-        # create a new product for the customer
         product = Product.objects.create(
             title="Test Product",
             price=100,
@@ -66,18 +68,15 @@ class CartTestCase(APITestCase):
             brand=brand,
             description="test description",
         )
-
-        # create a new order for the customer
+        # creating a new order for the customer
         order = Order.objects.create(customer=customer)
-
-        # create a new order-product relation
-        order_product = OrderProduct.objects.create(
+        # creating a new order-product relation
+        OrderProduct.objects.create(
             order=order,
             product=product,
             price=product.price,
             quantity=2
         )
-
         data = [
             {
                 'id': 1,
@@ -87,11 +86,9 @@ class CartTestCase(APITestCase):
                 'order': 1,
             },
         ]
-
         url = reverse('list_products_in_cart', kwargs={'token': customer.token})
-
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, f"Response data: {response.data}")
         self.assertEqual(response.data, data)
 
         self.assertEqual(response.data[0]['price'], '100.00')
@@ -100,51 +97,177 @@ class CartTestCase(APITestCase):
         self.assertEqual(response.data[0]['product'], 1)
 
 
-    def test_order_finalize(self):
+    '''test on Method "POST" not allowed'''
+    def test_order_finalize_negative_HTTP_405_METHOD(self):
+        # creating a new user
         self.user = get_user_model().objects.create_user(username='testuser', password='testpass')
-
+        # creating a new customer
         customer_token = str(uuid.uuid4())
-        # Customer.objects.create(token=customer_token, user=self.user)
+        Customer.objects.create(token=customer_token, user=self.user)
+        url = reverse('finalize_order')
+        self.client.force_login(self.user)
+        # post request
+        response = self.client.post(url)
+
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED, f"Response data: {response.data}")
+
+
+    '''finalize order'''
+    def test_order_finalize(self):
+        # creating a user
+        user = get_user_model().objects.create_user(
+            username='testuser',
+            password='testpass'
+        )
+        # creating a product
+        brand = Brand.objects.create(title='test brand')
+        product = Product.objects.create(
+            title="Test Product",
+            price=100,
+            old_price=110,
+            quantity=5,
+            brand=brand,
+            description="test description",
+        )
+        # creating a customer
+        customer_token = str(uuid.uuid4())
         customer = Customer.objects.create(
-            email='customer@test.com',
+            email='test@test.com',
             first_name='John',
             last_name='Doe',
-            phone='+1234567890',
-            token='1234567890'
+            phone='1234567890',
+            token=customer_token
         )
+        # create a customer address
         address = CustomerAddress.objects.create(
             customer=customer,
             country='USA',
             city='New York',
             post_code='10001',
-            address='123 Main St.'
+            address='123 Main St. apt 10'
         )
-        order = Order.objects.create(
-            customer=customer,
-            customer_shipping_address=address,
-            time_checkout=datetime.now()
+        # creating an order for the customer
+        order = Order.objects.create(customer=customer, is_ordered=False)
+        # adding a product to the order
+        OrderProduct.objects.create(
+            order=order,
+            product=product,
+            price=product.price,
+            quantity=1
         )
+        order_data = [
+            {
+                'id': 1,
+                'price': '100.00',
+                'quantity': 1,
+                'product': 1,
+                'order': 1,
+            },
+        ]
+        url = reverse('list_products_in_cart', kwargs={'token': customer.token})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, f"Response data: {response.data}")
+        self.assertEqual(response.data, order_data)
+        print("! order created", response.data[0]['order'])
 
-        url = reverse('finalize_order')
-        data = {
-            'token': customer_token,
-            'first_name': 'John',
-            'last_name': 'Doe',
-            'email': 'johndoe@test.com',
-            'phone': '1234567890',
-            'country': 'USA',
-            'city': 'New York',
-            'post_code': '10001',
-            'address': '123 Main St'
+        order.customer_shipping_address = address
+        order.is_ordered = True
+        order.time_checkout = datetime.now()
+        customer.save()
+        order.save()
+        print("!order.id:", order.id, "status: ", order.is_ordered, )
+
+        url = reverse('update_cart')
+        request_data = {
+            "token": customer_token,
+            "product_id": 1,
+            "quantity": 1
         }
-        self.client.force_login(self.user)
-        response = self.client.put(url, data=data)
+        status_order_data = {
+            "status": True,
+            "cart_items_count": 1
+        }
+        response = self.client.post(url, data=request_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        print("order found for this customer", response.status_code)
+        self.assertEqual(json.loads(response.content), status_order_data)
+        # creating a JWT token for the user
+        refresh = RefreshToken.for_user(user)
+        token = str(refresh.access_token)
+        # setting the authentication header
+        self.client.force_login(user)
+        force_authenticate(request, user=user)
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        request_data = {
+            "order_id": order.id,
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "johndoe@test.com",
+            "post_code": 10001,
+            "phone": 1234567890,
+            "country": "USA",
+            "city": "New York",
+            "address": "123 Main St apt 10",
+            "token": customer_token
+        }
+        url = reverse('finalize_order')
+        data = {
+            'id': 2,
+            'time_created': '2023-03-07T04:05:58.693431Z',
+            'time_checkout': '2023-03-06T20:05:58.730720Z',
+            'time_delivery': '2023-03-07T04:05:58.693431Z',
+            'is_ordered': True,
+            'customer_id': 1,
+            'customer_shipping_address_id': 1
+        }
+        response = self.client.put(url, data=request_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, f"Response data: {response.data}")
+        # self.assertEqual(json.loads(response.content), data, f"Response data: {json.loads(response.content)}")
+
         self.assertEqual(Order.objects.get(pk=order.pk).is_ordered, True)
         self.assertEqual(Customer.objects.get(pk=customer.pk).first_name, 'John')
         self.assertEqual(CustomerAddress.objects.get(pk=address.pk).city, 'New York')
+        self.assertEqual(CustomerAddress.objects.get(pk=address.pk).post_code, '10001')
 
-        # test_customer_my_orders -> Fail with error:  line 143, in test_order_finalize
-        #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # AssertionError: 405 != 200
+        self.assertEqual(response.data['id'], data['id'])
+        self.assertEqual(response.data['is_ordered'], data['is_ordered'])
+        self.assertEqual(response.data['customer'], data['customer_id'])
+        self.assertEqual(response.data['customer_shipping_address'], data['customer_shipping_address_id'])
+
+        self.assertEqual(Order.objects.filter(customer=customer, is_ordered=True).count(), 2)
+        self.assertEqual(OrderProduct.objects.filter(order=order).count(), 1)
+        self.assertEqual(CustomerAddress.objects.filter(customer=customer).count(), 1)
+        self.assertEqual(response.data['is_ordered'], True, f"Response data: {response.data}")
+
+        '''test api/order/all/ - all orders for the registered customer'''
+        url = reverse('all_orders')
+        data = [{
+            'id': 1,
+            'time_created': '2023-03-07T04:05:58.693431Z',
+            'time_checkout': '2023-03-06T20:05:58.730720Z',
+            'time_delivery': '2023-03-07T04:05:58.693431Z',
+            'is_ordered': True,
+            'customer_id': 1,
+            'customer_shipping_address_id': 1,
+            },
+            {
+            "id": 2,
+            "time_created": "2023-03-06T01:25:11.031667Z",
+            "time_checkout": "2023-03-06T01:25:11.031667Z",
+            "time_delivery": "2023-03-06T01:25:11.031667Z",
+            "is_ordered": True,
+            "customer": 7,
+            "customer_shipping_address": 1
+            }
+        ]
+
+        response = self.client.get(url, data=request_data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK, f"Response data: {response.data}")
+
+        self.assertEqual(response.data[0]['id'], data[0]['id'])
+        self.assertEqual(response.data[0]['is_ordered'], data[0]['is_ordered'])
+        self.assertEqual(response.data[0]['customer'], data[0]['customer_id'])
+        self.assertEqual(response.data[0]['customer_shipping_address'], data[0]['customer_shipping_address_id'])
