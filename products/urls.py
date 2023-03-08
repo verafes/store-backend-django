@@ -8,12 +8,8 @@ urlpatterns = [
     path('get/category/<int:pk>/', CategoryProductRetrieve.as_view(), name='products_list_by_category'),
     path('brands/all/', BrandList.as_view(), name='brands_list'),
     path('add/', ProductCreate.as_view(), name='create_product'),
-    path('get/<int:pk>/delete/', ProductRetrieveDestroy.as_view(), name="product_delete"),
+    path('rud/<int:pk>/delete/', ProductRetrieveDestroy.as_view(), name="product_delete"),
     path('rud/<int:pk>/', ProductRetrieveDestroy.as_view(), name="product_update"),
     path('brand/<int:pk>/', ProductBrandRetrieve.as_view(), name='brand_by_id'),
     path('get/<int:pk>/', ProductRetrieve.as_view(), name='product_by_id'),
-
-    # path('goods/', product_list, name="list_of_products"),
-    # path('good/<int:product_id>/', retrieve_product, name='get_product'),
-    # path('good/delete/<int:product_id>/', delete_product, name='delete_product'),
 ]

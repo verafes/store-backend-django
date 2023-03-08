@@ -4,9 +4,6 @@ from rest_framework import generics, status, request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from rest_framework.decorators import permission_classes
-from rest_framework.permissions import AllowAny
-
 from orders.models import Order, OrderProduct
 from orders.serializers import OrderSerializer, OrderProductSerializer
 from customers.models import Customer, CustomerAddress
@@ -33,7 +30,7 @@ class UpdateCart(APIView):
 
     def post(self, *args, **qargs):
         try:
-            # Check if the customer exists
+            # Checking if the customer exists
             try:
                 customer = Customer.objects.get(token=self.request.data['token'])
             except Customer.DoesNotExist:
@@ -59,7 +56,7 @@ class UpdateCart(APIView):
             if product.quantity < requested_quantity:
                 response = {
                     'status': False,
-                    'error': 'Not enough product quantity available in inventory'
+                    'error': 'Not enough product quantity available in stock'
                 }
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
 
@@ -93,7 +90,7 @@ class UpdateCart(APIView):
                 'status': True,
                 'cart_items_count': count_items
             }
-            # Update the product quantity in the inventory
+            # Updating the product quantity in the inventory
             product.quantity = product.quantity - requested_quantity
             product.save()
 
@@ -121,34 +118,38 @@ class CartList(generics.ListAPIView):
 
 
 '''api/order/finalize/'''
-@permission_classes([AllowAny])
-class OrderFinalize(APIView):
+class OrderFinalize(generics.UpdateAPIView):
     http_method = ['put']
 
     serializer_class = OrderSerializer
     queryset = Order.objects.all()
 
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         try:
+            # Checking if customer and order exist
             customer = Customer.objects.get(token=self.request.data['token'])
-            order = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id').first()
-
-            if order is None:
+            if not customer:
+                return Response({
+                    'message': 'Customer not found'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            order = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id')
+            if not order:
                 return Response({
                     'message': 'No pending order found for this customer'
                 }, status=status.HTTP_400_BAD_REQUEST)
+            order = order[0]
 
             serializer = self.get_serializer(order, data=request.data, partial=True)
-            serializer.is_valid(raise_exeption=True)
-            self.preform_update(serializer)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
 
-            customer.first_name = self.request.data.get('first_name', customer.first_name)
-            customer.last_name = self.request.get('last_name', customer.last_name)
-            customer.email = self.request.data.get('email', customer.email)
-            customer.phone = self.request.data.get('phone', customer.phone)
+            # Updating customer information
+            customer.first_name = self.request.data['first_name']
+            customer.last_name = self.request.data['last_name']
+            customer.email = self.request.data['email']
+            customer.phone = self.request.data['phone']
             customer.save()
-
-            # checking if the address is already created in database
+            # Updating or creating customer address
             try:
                 address = CustomerAddress.objects.get(customer=customer)
                 address.country = self.request.data['country']
@@ -156,7 +157,7 @@ class OrderFinalize(APIView):
                 address.post_code = self.request.data['post_code']
                 address.address = self.request.data['address']
                 address.save()
-            except CustomerAddress.DoesNotExist:
+            except (CustomerAddress.DoesNotExist, KeyError):
                 address = CustomerAddress.objects.create(
                     customer=customer,
                     country=self.request.data['country'],
@@ -164,10 +165,10 @@ class OrderFinalize(APIView):
                     post_code=self.request.data['post_code'],
                     address=self.request.data['address']
                 )
-
+            # Finalizing order
             order.customer_shipping_address = address
             order.is_ordered = True
-            order.time_checkout = datetime.now()
+            order.time_checkout = datetime.datetime.now()
             order.save()
 
             return Response(serializer.data, status=status.HTTP_200_OK)
