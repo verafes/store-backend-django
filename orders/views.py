@@ -1,5 +1,6 @@
 import datetime
 
+from django.utils import timezone
 from rest_framework import generics, status, request
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -40,7 +41,7 @@ class UpdateCart(APIView):
                 }
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if the product is available
+            # Checking if the product is available
             try:
                 product = Product.objects.get(pk=self.request.data['product_id'])
             except Product.DoesNotExist:
@@ -51,8 +52,8 @@ class UpdateCart(APIView):
                 return Response(data=response, status=status.HTTP_400_BAD_REQUEST)
 
             # Default to 1 if quantity is not provided
-            requested_quantity = self.request.data.get('quantity', 1)
-            # Check if the product quantity is enough in inventory
+            requested_quantity = int(self.request.data.get('quantity', 1))
+            # Checking if the product quantity is enough in inventory
             if product.quantity < requested_quantity:
                 response = {
                     'status': False,
@@ -75,12 +76,12 @@ class UpdateCart(APIView):
                     product_order.quantity = self.request.data['quantity']
                     product_order.save()
             except OrderProduct.DoesNotExist:
-                    OrderProduct.objects.create(
-                        order=order,
-                        product=product,
-                        price=product.price,
-                        quantity=self.request.data['quantity']
-                        )
+                OrderProduct.objects.create(
+                    order=order,
+                    product=product,
+                    price=product.price,
+                    quantity=self.request.data['quantity']
+                    )
             # count items in Cart
             products_in_order = OrderProduct.objects.filter(order=order)
             count_items = 0
@@ -168,7 +169,8 @@ class OrderFinalize(generics.UpdateAPIView):
             # Finalizing order
             order.customer_shipping_address = address
             order.is_ordered = True
-            order.time_checkout = datetime.datetime.now()
+            order.time_checkout = timezone.now()
+            # order.time_checkout = datetime.datetime.now()
             order.save()
 
             return Response(serializer.data, status=status.HTTP_200_OK)

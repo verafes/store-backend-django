@@ -12,7 +12,6 @@ User = get_user_model()
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        # fields = "__all__"
         fields = ['id', 'first_name', 'last_name', 'phone', 'email', 'time_created', 'user_id']
 
 
@@ -20,7 +19,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 class CustomerAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerAddress
-        fields = "__all__"
+        fields = '__all__'
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -48,13 +47,13 @@ class UserSerializer(serializers.ModelSerializer):
                     customer.email = validate_data['email']
                 customer.save()
             except BaseException as error:
-                print("Error:", str(error))
+                print('Error:', str(error))
             user.set_password(validate_data['password'])
             user.save()
             return user
 
         except BaseException as error:
-            print("Error:", str(error))
+            print('Error:', str(error))
             return False
 
 
@@ -76,6 +75,5 @@ class MyOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        # fields = '__all__'
         fields = ['id', 'is_ordered', 'time_created', 'time_checkout', 'time_delivery', 'products']
 
