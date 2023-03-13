@@ -51,10 +51,13 @@ The project includes Unit tests for API endpoints and logic. For testing views d
 6. Create database from models:  
 
 `python3 manage.py makemigrations`
+
 `python3 manage.py migrate`
 
 7. Run server:
+
 `python3 manage.py runserver`
 
 8. Run tests:
+
 `python .\manage.py test`
