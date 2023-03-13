@@ -39,22 +39,22 @@ The project includes Unit tests for API endpoints and logic. For testing views d
 
 3. Create a virtual environment:
 
-#### `python -m venv env!`
+`python -m venv env`
 
 4. Install Django:
-#### `pip install django`
+`pip install django`
 
 5. Install the required dependencies:  
 
-#### `pip install -r requirements.txt`
+`pip install -r requirements.txt`
 
 6. Create database from models:  
 
-#### `python3 manage.py makemigrations`
-#### `python3 manage.py migrate`
+`python3 manage.py makemigrations`
+`python3 manage.py migrate`
 
 7. Run server:
-#### `python3 manage.py runserver`
+`python3 manage.py runserver`
 
 8. Run tests:
-#### `python .\manage.py test`
+`python .\manage.py test`
