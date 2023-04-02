@@ -1,6 +1,6 @@
-## Getting Started with creating backend for online store
+## Backend for online store
 
-**Python Project**
+**Python Project Description:**
 
 An example of a backend system for online store as React App > 
 [frontend](https://github.com/6048566/pasv-online-store-front) 
@@ -39,25 +39,40 @@ The project includes Unit tests for API endpoints and logic. For testing views d
 
 3. Create a virtual environment:
 
-`python -m venv env`
+```bash
+python -m venv env
+```
 
 4. Install Django:
-`pip install django`
+
+```bash
+pip install django
+```
 
 5. Install the required dependencies:  
 
-`pip install -r requirements.txt`
+```bash
+pip install -r requirements.txt
+```
 
 6. Create database from models:  
 
-`python3 manage.py makemigrations`
+```bash
+python3 manage.py makemigrations
+```
 
-`python3 manage.py migrate`
+```bash
+python3 manage.py migrate
+```
 
 7. Run server:
 
-`python3 manage.py runserver`
+```bash
+python3 manage.py runserver
+```
 
 8. Run tests:
 
-`python .\manage.py test`
+```bash
+python .\manage.py test
+```
