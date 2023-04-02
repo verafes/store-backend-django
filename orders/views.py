@@ -1,7 +1,8 @@
 import datetime
-
 from django.utils import timezone
-from rest_framework import generics, status, request
+from datetime import timedelta
+
+from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -9,7 +10,6 @@ from orders.models import Order, OrderProduct
 from orders.serializers import OrderSerializer, OrderProductSerializer
 from customers.models import Customer, CustomerAddress
 from products.models import Product
-
 
 '''List of Orders - api/order/all'''
 class OrderList(generics.ListAPIView):
@@ -81,12 +81,12 @@ class UpdateCart(APIView):
                     product=product,
                     price=product.price,
                     quantity=self.request.data['quantity']
-                    )
+                )
             # count items in Cart
             products_in_order = OrderProduct.objects.filter(order=order)
             count_items = 0
             for item in products_in_order:
-                count_items += item.quantity   # item['quantity']
+                count_items += item.quantity  # item['quantity']
             response = {
                 'status': True,
                 'cart_items_count': count_items
@@ -108,6 +108,7 @@ class UpdateCart(APIView):
 '''List of Products in Cart - /api/card/list/<token>/'''
 class CartList(generics.ListAPIView):
     serializer_class = OrderProductSerializer
+
     def get_queryset(self):
         try:
             return OrderProduct.objects.filter(
@@ -133,12 +134,19 @@ class OrderFinalize(generics.UpdateAPIView):
                 return Response({
                     'message': 'Customer not found'
                 }, status=status.HTTP_400_BAD_REQUEST)
-            order = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id')
-            if not order:
+            orders = Order.objects.filter(customer=customer, is_ordered=False).order_by('-id')
+            if not orders:
                 return Response({
                     'message': 'No pending order found for this customer'
                 }, status=status.HTTP_400_BAD_REQUEST)
-            order = order[0]
+            else:
+                order = orders[0]
+                # Verify order creation date and delete if necessary
+                if order.time_created + timedelta(hours=48) < timezone.now():
+                    order.delete()
+                    return Response({
+                        'message': 'Order was older than 2 days and has been deleted'
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = self.get_serializer(order, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
@@ -170,7 +178,7 @@ class OrderFinalize(generics.UpdateAPIView):
             order.customer_shipping_address = address
             order.is_ordered = True
             order.time_checkout = timezone.now()
-            # order.time_checkout = datetime.datetime.now()
+            # order.time_checkout = datetime.now()
             order.save()
 
             return Response(serializer.data, status=status.HTTP_200_OK)
