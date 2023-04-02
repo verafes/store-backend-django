@@ -45,7 +45,8 @@ class InitUserData:
             first_name='John',
             last_name='Doe',
             phone='1234567890',
-            token=self.customer_token
+            token=self.customer_token,
+            user=self.user
         )
 
 

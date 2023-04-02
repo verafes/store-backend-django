@@ -58,21 +58,33 @@ pip install -r requirements.txt
 6. Create database from models:  
 
 ```bash
-python3 manage.py makemigrations
+python manage.py makemigrations
 ```
 
 ```bash
-python3 manage.py migrate
+python manage.py migrate
 ```
 
 7. Run server:
 
 ```bash
-python3 manage.py runserver
+python manage.py runserver
 ```
 
 8. Run tests:
 
 ```bash
 python .\manage.py test
+```
+
+9. Install Python library you to read environment variables: 
+
+```bash
+pip install python-dotenv
+
+```
+9. Run Docker:
+
+```bash
+docker-compose up 
 ```

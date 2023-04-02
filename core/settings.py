@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv(dotenv_path=Path('.env'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d)om-#%jol+)t&9j3w_n+230x%%)bbknub4^36p-&%^uf*jzhv'
+SECRET_KEY = getenv('DJANGO_SECRET_KEY', False)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = getenv('DJANGO_DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -78,13 +82,25 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+DB_TYPE = getenv('DB_TYPE', 'sqlite')
+if DB_TYPE == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+elif DB_TYPE == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': getenv('DB_NAME'),
+            'USER': getenv('DB_USER'),
+            'DB_PASSWORD': getenv('DB_PASSWORD'),
+            'DB_HOST': getenv('DB_HOST'),
+            'DB_PORT': getenv('DB_PORT'),
+            }
+        }
 
 
 # Password validation
@@ -133,12 +149,12 @@ REST_FRAMEWORK = {
     # 'PAGE_SIZE': 2
 }
 
-AWS_ACCESS_KEY_ID = 'tkQ1DN77wrJMSl7C'
-AWS_SECRET_ACCESS_KEY = '6TgFHxbpTT2HmqV07Jzs9uL3xFUDD1ja'
-AWS_STORAGE_BUCKET_NAME = 'online-store'
-AWS_S3_ENDPOINT_URL = 'http://127.0.0.1:9000/'
+AWS_ACCESS_KEY_ID = getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = getenv('SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_ENDPOINT_URL = getenv('AWS_S3_ENDPOINT_URL')
 
 # django < 4.2
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+DEFAULT_FILE_STORAGE = getenv('DOCKER_DEFAULT_FILE_STORAGE')
 # django >= 4.2
-# STORAGES = {"default": "storages.backends.s3boto3.S3Boto3Storage"}
+# STORAGES = getenv('DOCKER_STORAGES')

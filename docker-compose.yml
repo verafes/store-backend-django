@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  postgres:
+    container_name: online_store_postgres_container
+    image: postgres
+    environment:
+      PGDATA: /data/postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - online_store_postgres_vol:/data/postgres
+    ports:
+      - ${DB_PORT}:5432
+    networks:
+      - net
+
+networks:
+  net:
+    name: online_store_net
+    driver: bridge
+
+volumes:
+  online_store_postgres_vol:
