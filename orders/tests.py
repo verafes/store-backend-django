@@ -2,6 +2,7 @@ import json
 import uuid
 from datetime import datetime
 from django.utils import timezone
+from datetime import timedelta
 
 from rest_framework import status, request
 from rest_framework.test import APITestCase, force_authenticate
@@ -94,7 +95,7 @@ class CartTestCase(APITestCase):
         self.assertEqual(response.data[0]['product'], data[0]['product'])
 
 
-    '''Test: /api/cart/update/ - negatie - 'POST' not allowed'''
+    '''Test: /api/cart/update/ - negative - 'POST' not allowed'''
     def test_order_finalize_negative_HTTP_405_METHOD(self):
         # creating a new user
         user = get_user_model().objects.create_user(username='testuser', password='testpass')
@@ -182,17 +183,16 @@ class CartTestCase(APITestCase):
         url = reverse('finalize_order')
         data = {
             'id': 2,
-            'time_created': '2023-03-07T04:05:58.693431Z',
-            'time_checkout': '2023-03-06T20:05:58.730720Z',
-            'time_delivery': '2023-03-07T04:05:58.693431Z',
+            'time_created': datetime.now(),
+            'time_checkout': datetime.now(),
+            'time_delivery': datetime.now(),
             'is_ordered': True,
             'customer_id': 1,
             'customer_shipping_address_id': 1
         }
         response = self.client.put(url, data=request_data)
 
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         f'Response data: {response.data}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK, f'Response data: {response.data}')
 
         self.assertEqual(Order.objects.get(pk=order.pk).is_ordered, True)
         self.assertEqual(Customer.objects.get(pk=customer.pk).first_name, 'John')
@@ -286,6 +286,7 @@ class CartTestCase(APITestCase):
         self.assertEqual(OrderProduct.objects.filter(order=order).count(), 1)
         self.assertEqual(CustomerAddress.objects.filter(customer=customer).count(), 1)
 
+
     '''test api/order/finalize/ - no pending orders'''
     def test_order_finalize_no_pending_orders(self):
         init_data = InitUserData()
@@ -297,7 +298,7 @@ class CartTestCase(APITestCase):
                          f'Response data: {json.loads(response.content)}')
 
 
-    '''test api/order/finalize/ - no pending orders'''
+    '''test api/order/finalize/ - no customer'''
     def test_order_finalize_no_customer(self):
         url = reverse('finalize_order')
         request_data = {'token': ''}
@@ -306,7 +307,8 @@ class CartTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          f'Response data: {json.loads(response.content)}')
 
-    '''test api/order/finalize/ - no customer'''
+
+    '''test api/cart/update/ - no customer'''
     def test_update_cart_no_customer(self):
         url = reverse('update_cart')
         request_data = {'token': ''}
@@ -328,8 +330,9 @@ class CartTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          f'Response data: {json.loads(response.content)}')
 
+
     '''test api/order/update/ - 0 quantity in stock'''
-    def test_update_cart_quantity_0(self):
+    def test_update_cart_zero_quantity(self):
         customer_token = str(uuid.uuid4())
         Customer.objects.create(token=customer_token)
         InitProductData()
@@ -342,3 +345,57 @@ class CartTestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
                          f'Response data: {json.loads(response.content)}')
+
+
+    '''test api/order/finalize/ - delete order older than 2 days'''
+    def test_delete_old_order(self):
+        # create a customer
+        customer_token = str(uuid.uuid4())
+        customer = Customer.objects.create(token=customer_token,)
+        init_data = InitProductData()
+        product = init_data.product
+        # create an order that is older than 2 days
+        order = Order.objects.create(
+            customer=customer,
+            is_ordered=False,
+        )
+        OrderProduct.objects.create(
+            order=order,
+            product=product,
+            price=product.price,
+            quantity=2
+        )
+        order.time_created = timezone.now() - timedelta(days=3)
+        order.save()
+        data = [
+            {
+                'id': 1,
+                'price': '100.00',
+                'quantity': 2,
+                'product': 10,
+                'order': 1,
+            },
+        ]
+        url = reverse('list_products_in_cart', kwargs={'token': customer.token})
+        response = self.client.get(url)
+        # assert that the order is not empty and contains the expected data
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         f'Response data: {json.loads(response.content)}')
+        self.assertEqual(response.data, data)
+
+        # send a PUT request to finalize the order with the valid token
+        url = reverse('finalize_order')
+        request_data = {'token': customer_token}
+
+        response = self.client.put(url, data=request_data)
+        # assert the response status code and message
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST,
+                         f'Response data: {json.loads(response.content)}')
+        self.assertEqual(response.data['message'], 'Order was older than 2 days and has been deleted')
+
+        # assert that the order has been deleted
+        my_orders = OrderProduct.objects.filter(
+            order__customer__token=customer_token,
+            order__is_ordered=False
+        )
+        self.assertEqual(my_orders.count(), 0, f'Response data: {json.loads(response.content)}')

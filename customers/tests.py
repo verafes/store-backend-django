@@ -8,7 +8,7 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import AccessToken
 
 from customers.models import *
-from orders.models import Order
+from orders.models import Order, OrderProduct
 from products.tests import InitProductData, InitUserData
 
 
@@ -119,15 +119,13 @@ class CustomerTestCase(APITestCase):
     '''Test: /api/customer/myorders'''
     def test_customer_my_orders(self):
         # creating a customer and a user
-        init_data = InitUserData()
-        user = init_data.user
-        token = init_data.token
-        customer_token = init_data.customer_token
-        customer = init_data.customer
+        init_user_data = InitUserData()
+        user = init_user_data.user
+        token = init_user_data.token
+        customer_token = init_user_data.customer_token
 
         # creating a new product, adding to cart
-        init_data = InitProductData()
-        product = init_data.product
+        InitProductData()
         url = reverse('update_cart')
         request_data = {
             'token': customer_token,
@@ -151,15 +149,6 @@ class CustomerTestCase(APITestCase):
         self.client.force_login(user)
         force_authenticate(request, user=user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
-
-        url = reverse('token_obtain_pair')
-        response = self.client.post(url, {
-            'username': 'testuser',
-            'password': 'testpass',
-        })
-        self.assertIn('access', response.data)
-        access_token = response.data['access']  # to get the value of access_token
-
         request_data = {
             'order_id': order.id,
             'first_name': 'John',
@@ -176,27 +165,28 @@ class CustomerTestCase(APITestCase):
             {
                 'id': 1,
                 'is_ordered': True,
-                'time_created': '2023-02-21T05:39:31.978739Z',
-                'time_checkout': '2023-02-21T05:39:31.978739Z',
-                'time_delivery': '2023-02-21T05:39:31.978739Z'
+                'time_created': datetime.now(),
+                'time_checkout': datetime.now(),
+                'time_delivery': datetime.now(),
+                'customer_id': 1,
             }
         ]
         # finalizing order
         url = reverse('finalize_order')
         response = self.client.put(url, data=request_data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK,
-                         f'Response data: {json.loads(response.content)}')
-        print('finalize_order', response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, f'Response data: {json.loads(response.content)}')
+        self.assertEqual(Order.objects.get(pk=order.pk).is_ordered, True)
+
         # GET request to the my_orders endpoint
         url = reverse('my_orders')
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, data=request_data, format='json')
 
         # checking that the response has the order we created ->> test fails : my_orders=[]
         self.assertEqual(response.status_code, status.HTTP_200_OK,
                          f'Response data: {json.loads(response.content)}')
-        print('my_orders', response.content)
         self.assertEqual(response.data[0]['id'], data[0]['id'])
         self.assertEqual(response.data[0]['is_ordered'], data[0]['is_ordered'])
+
 
     '''Negative test: /api/customer/myorders with not valid token'''
     def test_customer_my_orders_negative_token_not_valid(self):
