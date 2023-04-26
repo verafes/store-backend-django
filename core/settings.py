@@ -9,30 +9,36 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
 from pathlib import Path
 from dotenv import load_dotenv
-from os import getenv
+from os import getenv, system, path
 
 load_dotenv(dotenv_path=Path('.env'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+DJANGO_DIR_MIGRATIONS='db/migrations'
+BASE_DIR_MIGRATIONS = path.join(BASE_DIR, DJANGO_DIR_MIGRATIONS)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = getenv('DJANGO_SECRET_KEY', False)
+SECRET_KEY = str(getenv('DJANGO_SECRET_KEY', 'lei@qwe%78fmksefo024'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = getenv('DJANGO_DEBUG')
+DEBUG = bool(getenv('DJANGO_DEBUG', False))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*',]
 
 
 # Application definition
+
+MIGRATIONS_APPS = [
+    'products',
+    'orders',
+    'customers',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -44,10 +50,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'rest_framework_simplejwt',
-    'products',
-    'orders',
-    'customers',
 ]
+
+INSTALLED_APPS = INSTALLED_APPS + MIGRATIONS_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -158,3 +163,18 @@ AWS_S3_ENDPOINT_URL = getenv('AWS_S3_ENDPOINT_URL')
 DEFAULT_FILE_STORAGE = getenv('DOCKER_DEFAULT_FILE_STORAGE')
 # django >= 4.2
 # STORAGES = getenv('DOCKER_STORAGES')
+
+STATIC_ROOT = BASE_DIR / 'static'
+
+# MIGRATIONS_MODELS = {
+#     'products': 'db.migrations.products',
+#     'orders': 'db.migrations.orders',
+#     'customers': 'db.migrations.customers',
+# }
+
+MIGRATION_MODULES = {}
+for app in MIGRATIONS_APPS:
+    # MIGRATION_MODULS[app] = f'db.migrations.{app}'
+    MIGRATION_MODULES[app] = DJANGO_DIR_MIGRATIONS.replace('/', '.') + "." + app
+    system(f'mkdir -p {BASE_DIR_MIGRATIONS}/{app}')
+    system(f'touch {BASE_DIR_MIGRATIONS}/{app}/__init__.py')

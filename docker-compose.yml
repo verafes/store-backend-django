@@ -1,7 +1,7 @@
 version: '3.9'
 
 services:
-  postgres:
+  db:
     container_name: online_store_postgres_container
     image: postgres
     environment:
@@ -16,6 +16,21 @@ services:
     networks:
       - net
 
+  web:
+    container_name: online_store_backend_container
+    build: .
+    command:
+      python manage.py runserver 0.0.0.0:8000
+    depends_on:
+      - db
+    networks:
+      - net
+    ports:
+      - 18080:8000
+    volumes:
+      - online_store_static_vol:/app/static
+      - online_store_migrations_vol:/app/db
+
 networks:
   net:
     name: online_store_net
@@ -23,3 +38,5 @@ networks:
 
 volumes:
   online_store_postgres_vol:
+  online_store_static_vol:
+  online_store_migrations_vol:

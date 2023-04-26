@@ -16,6 +16,7 @@ media
 
 # db
 db.sqlite3
+db
 
 # migrations
 **/migrations/**
