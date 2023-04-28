@@ -11,7 +11,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 COPY . .
-# RUN python manage.pt collectstatic --noinput
+RUN python manage.py collectstatic --noinput
 
 # running server
 EXPOSE 8080
