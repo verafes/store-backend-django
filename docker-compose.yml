@@ -30,6 +30,20 @@ services:
       - online_store_static_vol:/app/static
       - online_store_migrations_vol:/app/db
 
+  minio:
+    image: minio/minio
+    ports:
+      - "19000:${MINIO_PORT:-9000}"
+      - "19090:${MINIO_CONSOLE_PORT:-9001}"
+    volumes:
+      - online_store_minio_vol:/data
+    command: server --address ":${MINIO_PORT:-9000}" --console-address ":${MINIO_CONSOLE_PORT:-9001}" /data
+    networks:
+      - net
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+
   nginx:
     image: nginx:latest
     ports:
@@ -51,3 +65,4 @@ volumes:
   online_store_postgres_vol:
   online_store_static_vol:
   online_store_migrations_vol:
+  online_store_minio_vol:
