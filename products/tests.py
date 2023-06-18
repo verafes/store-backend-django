@@ -51,7 +51,7 @@ class InitUserData:
 
 
 class ProductTestCase(APITestCase):
-    '''Test: /api/product/all/'''
+    '''Test: /api/product/all/ - list of product'''
     def test_product(self):
         url = reverse('list_of_products')
         InitProductData()
@@ -97,8 +97,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: title filter'''
     def test_product_list_title_filter(self):
+        '''Test: product's title filter'''
         url = reverse('list_of_products')
         InitProductData()
 
@@ -110,9 +110,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['result'][0]['title'], search_title)
 
-
-    '''Test: price filter'''
     def test_product_list_price_filter(self):
+        '''Test: product's price filter'''
         url = reverse('list_of_products')
         InitProductData()
         search_price = "{:.2f}".format(100.00)
@@ -124,8 +123,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data['result'][0]['price'], search_price)
 
 
-    '''Test: old price filter'''
     def test_product_list_old_price_filter(self):
+        '''Test: product's old price filter'''
         url = reverse('list_of_products')
         InitProductData()
         search_old_price = "{:.2f}".format(110.00)
@@ -137,8 +136,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data['result'][0]['old_price'], search_old_price)
 
 
-    '''Test: quantity filter'''
     def test_product_list_quantity_filter(self):
+        '''Test: quantity filter'''
         url = reverse('list_of_products')
         InitProductData()
         search_quantity = 5
@@ -150,8 +149,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data['result'][0]['quantity'], search_quantity)
 
 
-    '''Test: brand title filter'''
     def test_product_list_brand_filter(self):
+        '''Test: brand title filter'''
         url = reverse('list_of_products')
         InitProductData()
         search_brand_title = 'test brand'
@@ -163,8 +162,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data['result'][0]['brand']['title'], search_brand_title)
 
 
-    '''Test: brand id filter'''
     def test_product_list_brand_id_filter(self):
+        '''Test: brand id filter'''
         url = reverse('list_of_products')
         InitProductData()
         search_brand_id = 1
@@ -176,8 +175,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data['result'][0]['brand']['id'], search_brand_id)
 
 
-    '''Test: /api/product/brands/all/ - list all drands'''
     def test_product_list_all_brand(self):
+        '''Test: /api/product/brands/all/ - list all drands'''
         url = reverse('brands_list')
         InitProductData()
         data = [
@@ -191,8 +190,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: /api/product/get/<int:pk>/ - get a product by ID'''
     def test_get_product_by_id(self):
+        '''Test: /api/product/get/<int:pk>/ - get a product by ID'''
         self.pk = 1
         url = reverse('product_by_id', args=[self.pk])
         InitProductData()
@@ -222,8 +221,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: /api/product/category/list/ - list all dcategories'''
     def test_all_categories(self):
+        '''Test: /api/product/category/list/ - list all dcategories'''
         url = reverse('categories_list')
 
         for i in range(1, 3):
@@ -250,8 +249,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: /api/product/get/category/<int:pk>/ get products in certain category by ID'''
     def test_get_products_in_category_products(self):
+        '''Test: /api/product/get/category/<int:pk>/ - get products in certain category by ID'''
         # request_data = Category.objects.filter(is_active=True)
         category = Category.objects.create(title='Test category', is_active=True)
         brand = Brand.objects.create(title='Test brand')
@@ -285,8 +284,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: /api/product/add/ - create a new product'''
     def test_add_product(self):
+        '''Test: /api/product/add/ - creating a new product'''
         # creating a user, a JWT token and a customer
         init_data = InitUserData()
         user = init_data.user
@@ -325,8 +324,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: /api/product/rud/<int:pk>/ update a product'''
     def test_update_product(self):
+        '''Test: /api/product/rud/<int:pk>/ update a product'''
         # creating a user, a JWT token and a customer
         init_data = InitUserData()
         user = init_data.user
@@ -359,8 +358,8 @@ class ProductTestCase(APITestCase):
         self.assertEqual(response.data, data)
 
 
-    '''Test: /api/product/rud/<int:pk>/delete/ - delete a product'''
     def test_update_product(self):
+        '''Test: /api/product/rud/<int:pk>/delete/ - delete a product'''
         # creating a user, a JWT token and a customer
         init_data = InitUserData()
         user = init_data.user

@@ -1,4 +1,3 @@
-from django.http.response import HttpResponse
 from rest_framework import generics, filters
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -6,28 +5,27 @@ from rest_framework.permissions import IsAuthenticated
 from .filters import ProductFilter
 from .serializers import *
 from .models import *
-import json
 
 from django_filters.rest_framework import DjangoFilterBackend
 from .paginations import ProductPagination
 
 
-'''/api/category/list/'''
 class CategoryList(generics.ListAPIView):
+    '''Endpoint: /api/category/list/ - retrieving a list of categories'''
     serializer_class = CategorySerializer
 
     def get_queryset(self):
         return Category.objects.filter(is_active=True)
 
 
-'''/api/category/get/<id>'''
 class CategoryRetrieve(generics.RetrieveAPIView):
+    '''Endpoint: /api/category/get/<id> - retrieving a specific category by id'''
     serializer_class = CategorySerializer
     queryset = Category.objects.all()
 
 
-'''api/product/all/'''
 class ProductList(generics.ListAPIView):
+    '''Endpoint: api/product/all/ - retrieving a list of products'''
     queryset = Product.objects.all()
     serializer_class = ProductListSerializer
     filter_backend = (DjangoFilterBackend, filters.SearchFilter,)
@@ -37,42 +35,41 @@ class ProductList(generics.ListAPIView):
     pagination_class = ProductPagination
 
 
-'''/api/product/get/<product_id>/'''
 class ProductRetrieve(generics.RetrieveAPIView):
+    '''Endpoint: /api/product/get/<product_id>/ - retrieving a product by id'''
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
 
 
-'''/api/product/get/category/<category_ID> > list of products by category'''
 class CategoryProductRetrieve(generics.RetrieveAPIView):
+    '''Endpoint: /api/product/get/category/<category_ID> > list of products by category'''
     serializer_class = CategoryProductRetrieveSerializer
     queryset = Category.objects.all()
 
 
-'''api/product/brands/all/'''
 class BrandList(generics.ListAPIView):
+    '''Endpoint: api/product/brands/all/ - retrieving a list of brands'''
     serializer_class = BrandSerializer
     queryset = Brand.objects.all()
 
 
-'''/api/product/get/brand/<brands_ID> '''
 class ProductBrandRetrieve(generics.RetrieveAPIView):
+    '''Endpoint: /api/product/get/brand/<brands_ID> - retrieving a brand by id'''
     serializer_class = BrandSerializer
     queryset = Brand.objects.all()
 
 
-'''api/product/add/'''
 class ProductCreate(generics.CreateAPIView):
+    '''Endpoint: api/product/add/ - creating a new product'''
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
 
-'''api/product/rud/<product_id>/'''
 class ProductRetrieveDestroy(generics.RetrieveUpdateDestroyAPIView):
+    '''Endpoint: api/product/rud/<product_id>/ - retrieving, updating, and deleting a product'''
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-

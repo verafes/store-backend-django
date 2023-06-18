@@ -4,6 +4,7 @@ from storages.utils import clean_name
 
 
 class FixUlrStorage(S3Boto3Storage):
+    """Set the URL generated for an object stored in S3-compatible storage."""
     def url(self, name, parameters=None, expire=None, http_method=None):
         # Preserve the trailing slash after normalizing the path
         name = self._normalize_name(clean_name(name))

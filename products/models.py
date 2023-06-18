@@ -1,8 +1,8 @@
 from django.db import models
 
 
-""" Table of Products """
 class Product(models.Model):
+    """ Table of Products """
     title = models.CharField(verbose_name='Title', max_length=200, null=False, blank=False)
     price = models.DecimalField(default=0, max_digits=9, decimal_places=2, null=False, blank=False)
     old_price = models.DecimalField(default=0, max_digits=9, decimal_places=2, null=False, blank=False)
@@ -21,8 +21,8 @@ class Product(models.Model):
         return self.title
 
 
-""" Table of Brands """
 class Brand(models.Model):
+    """ Table of Brands """
     title = models.CharField(max_length=200, null=False, blank=False, verbose_name="Title")
 
     class Meta:
@@ -34,8 +34,8 @@ class Brand(models.Model):
         return self.title
 
 
-""" Table Category """
 class Category(models.Model):
+    """ Table Category """
     title = models.CharField(verbose_name='Category', max_length=200, blank=False, null=False)
     is_active = models.BooleanField(verbose_name='Is Active', default=False, blank=False, null=False)
 
@@ -48,8 +48,8 @@ class Category(models.Model):
         return self.title
 
 
-""" Table of relationship between Products-Category """
 class ProductCategory(models.Model):
+    """ Table of relationship between Products-Category """
     product = models.ForeignKey(Product, verbose_name='Product', on_delete=models.CASCADE, blank=False, null=False)
     category = models.ForeignKey(Category, related_name='category_products', verbose_name='Category',
                                  on_delete=models.CASCADE, blank=False, null=False)
@@ -64,8 +64,8 @@ class ProductCategory(models.Model):
                # + " - " + str(self.category.title)[0:5]
 
 
-""" Table of Reviews of Products """
 class ProductReview(models.Model):
+    """ Table of Reviews of Products """
     review = models.CharField(verbose_name='Review', max_length=200000, blank=False, null=False)
     fullname = models.CharField(verbose_name='Full name', max_length=200, blank=False, null=False)
     product = models.ForeignKey(Product, related_name='reviews', verbose_name='Product',
@@ -79,4 +79,3 @@ class ProductReview(models.Model):
     def __str__(self):
         # return self.fullname
         return self.product.title
-        # return str(self.product) + " - " + self.review[0.5] + ".."
